@@ -45,6 +45,23 @@ An `AreaRangePointsArray` array that extends the standard `PointsArray` type but
 - `y` to represent the upper bound
 - `y0` to represent the lower bound
 
+> Used as an alternative to `upperPoints` and `lowerPoints`  
+> Good when `y` and `y0` are derived from a single `PointsArray` as in the example abore.
+
+### `upperPoints`
+
+A `PointsArray` array that comes from a field of the `points` object exposed the `children` render function of `CartesianChart`.
+
+> It is used with `lowerPoints` as an alternative to `points`  
+> Good when it comes from two different `PointsArray`, for example: minimum and maximum temperatures.
+
+### `lowerPoints`
+
+A `PointsArray` array that comes from a field of the `points` object exposed the `children` render function of `CartesianChart`.
+
+> It is used with `upperPoints` as an alternative to `points`  
+> Good when it comes from two different `PointsArray`, for example: minimum and maximum temperatures.
+
 ### `animate`
 
 The `animate` prop takes [a `PathAnimationConfig` object](../../animated-paths.md#animconfig) and will animate the path when the points change.
