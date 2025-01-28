@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Path, type PathProps } from "@shopify/react-native-skia";
-import type { PointsArray } from "../../types";
+import type { PointsArray, MaybeNumber } from "../../types";
 import { type AreaPathOptions, useAreaPath } from "../hooks/useAreaPath";
 import { AnimatedPath } from "./AnimatedPath";
 import { type PathAnimationConfig } from "../../hooks/useAnimatedPath";
@@ -9,40 +9,58 @@ import { type PathAnimationConfig } from "../../hooks/useAnimatedPath";
 export type AreaRangePointsArray = {
   x: number;
   xValue: PointsArray[number]["xValue"];
-  y: number;
-  y0: number;
+  y: MaybeNumber;
+  y0: MaybeNumber;
   yValue: PointsArray[number]["yValue"];
 }[];
 
-export type AreaRangeProps = {
-  points: AreaRangePointsArray;
-  animate?: PathAnimationConfig;
+export type AreaRangeProps = (
+	| {
+			points: AreaRangePointsArray;
+			upperPoints?: never;
+			lowerPoints?: never;
+	  }
+	| {
+			points?: never;
+			upperPoints: PointsArray;
+			lowerPoints: PointsArray;
+	  }
+) & {
+	animate?: PathAnimationConfig;
 } & AreaPathOptions &
   Partial<Pick<PathProps, "color" | "blendMode" | "opacity" | "antiAlias">>;
 
 export function AreaRange({
   points,
+  upperPoints,
+	lowerPoints,
   animate,
   curveType,
   connectMissingData,
   ...ops
 }: React.PropsWithChildren<AreaRangeProps>) {
-  const areaRangePoints = React.useMemo(() => {
-    // Create upper bound points going forward
-    const upperPoints = points.map((point) => ({
-      ...point,
-      y: point.y,
-    }));
+	const areaRangePoints = React.useMemo(() => {
+		if (points) {
+			// Create upper bound points going forward
+			const _upperPoints = points.map((point) => ({
+				...point,
+				y: point.y,
+			}));
 
-    // Create lower bound points going backward
-    const lowerPoints = [...points].reverse().map((point) => ({
-      ...point,
-      y: point.y0,
-    }));
+			// Create lower bound points going backward
+			const _lowerPoints = [...points].reverse().map((point) => ({
+				...point,
+				y: point.y0,
+			}));
 
-    // Combine into single array that traces a complete path
-    return [...upperPoints, ...lowerPoints];
-  }, [points]);
+			// Combine into single array that traces a complete path
+			return [..._upperPoints, ..._lowerPoints];
+		}
+
+		const reverseLowerPoints = [...lowerPoints].reverse();
+
+		return [...upperPoints, ...reverseLowerPoints];
+	}, [points, lowerPoints, upperPoints]);
 
   const { path } = useAreaPath(areaRangePoints, 0, {
     curveType,
